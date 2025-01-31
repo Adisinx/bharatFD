@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Management</title>
+  
+    <!-- TinyMCE WYSIWYG Editor -->
+    <script src="https://cdn.tiny.cloud/1/8tbt19pi4x4yy9drgcdh7wg5k5iji0fp3rnrxr58920wp3lf/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    
+    <script>
+        tinymce.init({
+            selector: "#faq-answer",
+            menubar: false,
+            plugins: "advlist autolink lists link charmap print preview",
+            toolbar: "bold italic | bullist numlist | removeformat",
+        });
+
+        // Function to fetch and display FAQs
+        async function fetchFAQs() {
+            const lang = document.getElementById("language").value;
+            const response = await fetch(`http://localhost:3000/faqs?lang=${lang}`);
+            const faqs = await response.json();
+            
+            const faqList = document.getElementById("faq-list");
+            faqList.innerHTML = ""; // Clear previous content
+            
+            faqs.forEach(faq => {
+                const faqItem = document.createElement("div");
+                faqItem.classList.add("faq-item");
+                faqItem.innerHTML = `<h3>${faq.question}</h3><p>${faq.answer}</p>`;
+                faqList.appendChild(faqItem);
+            });
+        }
+
+        // Function to submit FAQ
+        async function submitFAQ(event) {
+            event.preventDefault();
+            
+            const question = document.getElementById("faq-question").value;
+            const answer = tinymce.get("faq-answer").getContent(); // Get content from TinyMCE
+            
+            const response = await fetch("http://localhost:3000/faqs", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ question, answer }),
+            });
+
+            if (response.ok) {
+                alert("FAQ added successfully!");
+                document.getElementById("faq-form").reset();
+                tinymce.get("faq-answer").setContent(""); // Clear editor
+                fetchFAQs(); // Refresh FAQs list
+            } else {
+                alert("Error adding FAQ!");
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 20px;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        .faq-item {
+            background: #e3f2fd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .faq-item h3 {
+            margin: 0;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        label, input, select, textarea {
+            width: 100%;
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body onload="fetchFAQs()">
+
+    <div class="container">
+        <h2>FAQ Management</h2>
+
+        <!-- FAQ Submission Form -->
+        <form id="faq-form" onsubmit="submitFAQ(event)">
+            <label for="faq-question">Question:</label>
+            <input type="text" id="faq-question" required>
+
+            <label for="faq-answer">Answer:</label>
+            <textarea id="faq-answer"></textarea>
+
+            <button type="submit">Submit FAQ</button>
+        </form>
+
+        <hr>
+
+        <!-- Language Selection -->
+        <label for="language">Select Language:</label>
+        <select id="language" onchange="fetchFAQs()">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="bn">Bengali</option>
+        </select>
+
+        <h2>FAQs</h2>
+        <div id="faq-list"></div>
+    </div>
+
+</body>
+</html>
