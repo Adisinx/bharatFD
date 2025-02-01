@@ -42,6 +42,8 @@ Clone the repository to your local machine:
 git clone https://github.com/Adisinx/bharatFD.git
 cd bharatFD
 
+```
+
 ### ⚡ **Setup Instructions**
 
 #### 2. **Install Dependencies**
@@ -49,12 +51,16 @@ Make sure you have Node.js installed. Then, install the required dependencies:
 ```sh
 npm install
 
+```
+
 #### 3. **Configuration**
 Create a `.env` file in the root directory of the project and add the following variables:
 ```env
 MONGO_URI=your-mongodb-connection-url
 TINYMCE_API_KEY=your-tinymce-api-key
 GOOGLE_APPLICATION_CREDENTIALS=./key.json
+
+```
 
 
 #### 4. **Setup TinyMCE**
@@ -79,6 +85,7 @@ This endpoint allows you to create a new FAQ. The FAQ will be automatically tran
   "question": "What is the capital of India?",
   "answer": "New Delhi"
 }
+```
 
 
 
@@ -89,6 +96,7 @@ This endpoint retrieves all FAQs. You can specify a language (`lang`) in the que
 ##### Request (URL):
 ```bash
 GET /faqs?lang=hi
+```
 Response (JSON):
 json
 Copy
