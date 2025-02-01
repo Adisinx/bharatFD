@@ -3,27 +3,33 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path")
 const { Translate } = require("@google-cloud/translate").v2;
-// require("dotenv").config(); // Load environment variables from .env file
 
-// Initialize Express
+
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Initialize Google Translate API
-const translate = new Translate({
-    keyFilename: path.join(__dirname, "./key.json") // Path to your service account JSON file
-});
 
-// Connect to MongoDB Atlas
-const MONGO_URI = "mongodb+srv://gurnoorbhinders:yy6L856nmkRgkaXg@cluster0.evcbl.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0"; // Use environment variables for security
-mongoose.connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log("Connected to MongoDB Atlas"))
-  .catch(err => console.error("MongoDB Connection Error:", err));
+require('dotenv').config();
 
-// Define Mongoose Schema & Model
+
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+const translate = new Translate();
+
+console.log("Google Translate API initialized successfully!");
+
+
+const MONGO_URI = process.env.MONGO_URI;
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("Connected to MongoDB Atlas"))
+  .catch((err) => console.error("MongoDB Connection Error:", err));
+
+
 const faqSchema = new mongoose.Schema({
     question: { type: String, required: true },
     answer: { type: String, required: true },
@@ -35,7 +41,7 @@ const faqSchema = new mongoose.Schema({
     },
 });
 
-// Method to fetch translated text dynamically
+
 faqSchema.methods.getTranslatedText = function (lang) {
     return {
         question: this.translations[`question_${lang}`] || this.question,
@@ -45,7 +51,7 @@ faqSchema.methods.getTranslatedText = function (lang) {
 
 const FAQ = mongoose.model("FAQ", faqSchema);
 
-// Auto-translate function for FAQ entries
+
 async function autoTranslateFAQ(faq) {
     const languages = ["hi", "bn"];
     for (const lang of languages) {
@@ -57,14 +63,14 @@ async function autoTranslateFAQ(faq) {
     return faq;
 }
 
-// API Routes
 
-// Create FAQ
+
+
 app.post("/faqs", async (req, res) => {
     console.log(40000)
     try {
         let faq = new FAQ(req.body);
-        faq = await autoTranslateFAQ(faq); // Auto-translate before saving
+        faq = await autoTranslateFAQ(faq); 
         await faq.save();
         res.status(201).json(faq);
     } catch (err) {
@@ -72,7 +78,7 @@ app.post("/faqs", async (req, res) => {
     }
 });
 
-// Get FAQs with language selection
+
 app.get("/faqs", async (req, res) => {
     try {
         const lang = req.query.lang || "en";
@@ -84,6 +90,6 @@ app.get("/faqs", async (req, res) => {
     }
 });
 
-// Start server
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
